@@ -1,13 +1,35 @@
 const { sequelize } = require("../configs/db");
 
-const userModel = require("./User");
-const categoryModel = require("./Category");
-const productModel = require("./Product");
-const subCategoryModel = require("./SubCategory");
+const User = require("./User");
+const Category = require("./Category");
+const SubCategory = require("./SubCategory");
+const Product = require("./Product");
+
+Product.belongsToMany(SubCategory, {
+  through: "Product_Categories",
+  timestamps: false,
+  onDelete: "CASCADE",
+});
+
+SubCategory.belongsToMany(Product, {
+  through: "Product_Categories",
+  timestamps: false,
+  onDelete: "CASCADE",
+});
+
+SubCategory.belongsTo(Category, {
+  foreignKey: "categoryID",
+  onDelete: "CASCADE",
+});
+
+Category.hasMany(SubCategory, {
+  foreignKey: "categoryID",
+  onDelete: "CASCADE",
+});
 
 const syncDB = async () => {
   try {
-    await sequelize.sync({ alter: true });
+    await sequelize.sync();
     console.log("✅ Database synced successfully.");
   } catch (err) {
     await sequelize.close();
@@ -18,8 +40,8 @@ const syncDB = async () => {
 module.exports = {
   sequelize,
   syncDB,
-  userModel,
-  categoryModel,
-  productModel,
-  subCategoryModel,
+  User,
+  Category,
+  SubCategory,
+  Product,
 };
