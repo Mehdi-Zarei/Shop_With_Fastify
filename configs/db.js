@@ -9,23 +9,14 @@ const sequelize = new Sequelize({
   logging: false,
 });
 
-(async () => {
+const connectDB = async () => {
   try {
     await sequelize.authenticate();
-    console.log("✅Connect To Database Successfully.");
+    console.log("✅ Connected to Database Successfully.");
   } catch (error) {
     await sequelize.close();
-    console.error("❌Unable to connect to the database:", error);
+    console.error("❌ Unable to connect to the database:", error);
   }
-})();
+};
 
-(async () => {
-  try {
-    await sequelize.sync();
-    console.log("✅Database synced successfully.");
-  } catch (err) {
-    console.error("❌Error syncing database:", err);
-  }
-})();
-
-module.exports = sequelize;
+module.exports = { sequelize, connectDB };
