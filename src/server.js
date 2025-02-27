@@ -1,5 +1,5 @@
 require("dotenv").config();
-const app = require("./app");
+const fastify = require("./app");
 const port = process.env.PORT;
 const { connectDB } = require("../configs/db");
 const { syncDB } = require("../models/index");
@@ -11,7 +11,7 @@ const startServer = async () => {
     await syncDB();
     await connectRedis();
 
-    app.listen({ port });
+    fastify.listen({ port });
     console.log(`🚀 Server is up and running at: http://localhost:${port}`);
   } catch (error) {
     console.error("❌ Failed to start the server:", error.message);
