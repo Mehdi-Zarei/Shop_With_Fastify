@@ -48,11 +48,7 @@ const product = sequelize.define(
       unique: true,
     },
   },
-  {
-    paranoid: true,
-    freezeTableName: true,
-    timestamps: true,
-  }
+  { freezeTableName: true }
 );
 
 module.exports = product;

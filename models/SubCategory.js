@@ -1,8 +1,9 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../configs/db");
+const Category = require("./Category");
 
-const category = sequelize.define(
-  "category",
+const SubCategory = sequelize.define(
+  "subCategory",
   {
     id: {
       type: DataTypes.INTEGER.UNSIGNED,
@@ -18,16 +19,16 @@ const category = sequelize.define(
       allowNull: false,
       unique: true,
     },
-    parent: {
-      type: DataTypes.STRING,
+    categoryID: {
+      type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
+      references: {
+        model: Category,
+        key: "id",
+      },
     },
   },
-  {
-    paranoid: true,
-    freezeTableName: true,
-    timestamps: true,
-  }
+  { freezeTableName: true }
 );
 
-module.exports = category;
+module.exports = SubCategory;

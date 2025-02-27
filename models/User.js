@@ -39,11 +39,7 @@ const user = sequelize.define(
       defaultValue: false,
     },
   },
-  {
-    paranoid: true,
-    freezeTableName: true,
-    // timestamps: true, //todo:check it
-  }
+  { freezeTableName: true }
 );
 
 module.exports = user;

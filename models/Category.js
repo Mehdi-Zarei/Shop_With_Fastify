@@ -23,11 +23,7 @@ const category = sequelize.define(
       allowNull: false,
     },
   },
-  {
-    paranoid: true,
-    freezeTableName: true,
-    timestamps: true,
-  }
+  { freezeTableName: true }
 );
 
 module.exports = category;
