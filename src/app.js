@@ -1,11 +1,7 @@
 const fastify = require("fastify")();
+fastify.register(require("@fastify/multipart"));
 
 //* Import Files
-
-const {
-  NotFoundErrorHandler,
-  GlobalErrorHandler,
-} = require("../helpers/ErrorHandlers");
 
 //* Packages
 
@@ -15,13 +11,28 @@ fastify.addHook("onRoute", (routeOptions) => {
 });
 
 //* Import Routes
-const productRoutes = require("./product/V1/product.routes");
+const authRoutes = require("./auth/V1/auth.routes");
 
 //* Register Routes
-fastify.register(productRoutes, { prefix: "/products" });
 
-//* 404  & General Error Handler
-fastify.register(NotFoundErrorHandler);
-fastify.register(GlobalErrorHandler);
+fastify.register(authRoutes);
+
+//* 404 Error Handler
+fastify.setNotFoundHandler((request, reply) => {
+  reply.status(404).send({
+    error: "Not Found",
+    message: `The requested URL ${request.raw.url} was not found on the server.`,
+  });
+});
+
+//* General Error Handler
+fastify.setErrorHandler((error, request, reply) => {
+  console.error(error);
+  const statusCode = error.statusCode || 500;
+  reply.status(statusCode).send({
+    error: error.name,
+    message: error || "Internal Server Error",
+  });
+});
 
 module.exports = fastify;
