@@ -14,13 +14,4 @@ const errorResponse = async (reply, statusCode = 400, message, data) => {
   });
 };
 
-const handleError = (reply, error, statusCode = 500) => {
-  reply.status(statusCode).send({
-    success: false,
-    message: error.message || "Internal Server Error",
-    error: error.message,
-  });
-  console.log(error);
-};
-
-module.exports = { successResponse, errorResponse, handleError };
+module.exports = { successResponse, errorResponse };
