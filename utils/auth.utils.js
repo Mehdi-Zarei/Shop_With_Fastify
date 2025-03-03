@@ -13,6 +13,10 @@ const hashRefreshToken = async (refreshToken, salt) => {
   return bcrypt.hashSync(refreshToken, salt);
 };
 
+const compareRefreshToken = async (refreshToken, hashedRefreshToken) => {
+  return bcrypt.compareSync(refreshToken, hashedRefreshToken);
+};
+
 const generateAccessToken = async (userID, userRole) => {
   return jwt.sign(
     { id: userID, role: userRole },
@@ -33,6 +37,7 @@ module.exports = {
   hashPassword,
   verifyPassword,
   hashRefreshToken,
+  compareRefreshToken,
   generateAccessToken,
   generateRefreshToken,
 };
