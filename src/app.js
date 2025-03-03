@@ -1,17 +1,14 @@
 const fastify = require("fastify")();
 fastify.register(require("@fastify/multipart"));
+fastify.register(require("fastify-cookie"));
 
-//* Import Files
-
-//* Packages
+//* Import Path Files
+const authRoutes = require("./auth/V1/auth.routes");
 
 //* Hooks
 fastify.addHook("onRoute", (routeOptions) => {
   routeOptions.url = "/api/v1" + routeOptions.url;
 });
-
-//* Import Routes
-const authRoutes = require("./auth/V1/auth.routes");
 
 //* Register Routes
 
