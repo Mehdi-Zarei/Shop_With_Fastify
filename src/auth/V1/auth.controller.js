@@ -17,7 +17,10 @@ const {
   verifyPassword,
 } = require("../../../utils/auth.utils");
 
-const { saveRefreshToken } = require("../../../utils/redis");
+const {
+  saveRefreshToken,
+  removeRefreshToken,
+} = require("../../../utils/redis");
 
 exports.register = async (request, reply) => {
   const { name, phone, email, password } = request.body;
@@ -80,6 +83,10 @@ exports.login = async (request, reply) => {
     return errorResponse(reply, 404, "User Not Found With This Information !!");
   }
 
+  if (isUserExist.isRestrict) {
+    return errorResponse(reply, 403, "This user already banned !!");
+  }
+
   const comparePassword = await verifyPassword(password, isUserExist.password);
 
   if (!comparePassword) {
@@ -103,12 +110,28 @@ exports.login = async (request, reply) => {
   });
 };
 
-exports.getMe = async (request, reply) => {};
+exports.getMe = async (request, reply) => {
+  const user = request.user;
 
-exports.refreshToken = async (request, reply) => {};
+  return successResponse(reply, 200, "OK", user);
+};
+
+exports.refreshToken = async (request, reply) => {
+  const user = request.user;
+
+  const accessToken = await generateAccessToken(user.id, user.role);
+
+  return successResponse(reply, 200, "OK", accessToken);
+};
 
 exports.forgetPassword = async (request, reply) => {};
 
 exports.resetPassword = async (request, reply) => {};
 
-exports.logout = async (request, reply) => {};
+exports.logout = async (request, reply) => {
+  const user = request.user;
+
+  await removeRefreshToken(user.id);
+
+  return successResponse(reply, 200, "User logged out successfully.");
+};
