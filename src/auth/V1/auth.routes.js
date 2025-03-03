@@ -11,14 +11,22 @@ const {
   logout,
 } = require("./auth.controller");
 
-module.exports = fp(function (fastify, options, done) {
+//* Middlewares
+const {
+  authGourd,
+  verifyRefreshToken,
+} = require("../../../middlewares/V1/auth");
+
+module.exports = fp(async function (fastify, options) {
   fastify.post("/auth/register", register);
   fastify.post("/auth/login", login);
-  fastify.get("/auth/me", getMe);
-  fastify.post("/auth/refresh", refreshToken);
+  fastify.get("/auth/me", { preHandler: authGourd }, getMe);
+  fastify.get(
+    "/auth/refresh",
+    { preHandler: verifyRefreshToken },
+    refreshToken
+  );
   fastify.post("/auth/forget-password", forgetPassword);
   fastify.post("/auth/reset-password/:token", resetPassword);
-  fastify.post("/auth/logout", logout);
-
-  done();
+  fastify.post("/auth/logout", { preHandler: authGourd }, logout);
 });
