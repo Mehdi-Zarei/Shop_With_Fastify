@@ -9,4 +9,12 @@ const saveRefreshToken = async (key, value) => {
   );
 };
 
-module.exports = { saveRefreshToken };
+const getRefreshToken = async (key) => {
+  return redis.get(`refreshToken:${key}`);
+};
+
+const removeRefreshToken = async (key) => {
+  return redis.del(`refreshToken:${key}`);
+};
+
+module.exports = { saveRefreshToken, getRefreshToken, removeRefreshToken };
