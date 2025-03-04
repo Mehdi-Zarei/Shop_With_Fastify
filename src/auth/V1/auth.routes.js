@@ -19,14 +19,20 @@ const {
 
 module.exports = fp(async function (fastify, options) {
   fastify.post("/auth/register", register);
+
   fastify.post("/auth/login", login);
+
   fastify.get("/auth/me", { preHandler: authGourd }, getMe);
+
   fastify.get(
     "/auth/refresh",
     { preHandler: verifyRefreshToken },
     refreshToken
   );
+
   fastify.post("/auth/forget-password", forgetPassword);
+
   fastify.post("/auth/reset-password/:token", resetPassword);
+
   fastify.post("/auth/logout", { preHandler: authGourd }, logout);
 });
