@@ -29,8 +29,26 @@ const { sendVerificationEmail } = require("../../../utils/nodemailer");
 
 const emailMessages = require("../../../utils/emailTemplates");
 
+//* Validator Schema
+const {
+  registerSchema,
+  loginSchema,
+  forgetPasswordSchema,
+  resetPasswordSchema,
+} = require("./auth.validator");
+
 exports.register = async (request, reply) => {
   const { name, phone, email, password } = request.body;
+
+  const { error } = registerSchema.validate(request.body, {
+    abortEarly: false,
+  });
+
+  if (error) {
+    return reply
+      .status(400)
+      .send({ errors: error.details.map((err) => err.message) });
+  }
 
   const isUserExist = await userModel.findOne({
     where: {
@@ -79,6 +97,16 @@ exports.register = async (request, reply) => {
 
 exports.login = async (request, reply) => {
   const { identifier, password } = request.body;
+
+  const { error } = loginSchema.validate(request.body, {
+    abortEarly: false,
+  });
+
+  if (error) {
+    return reply
+      .status(400)
+      .send({ errors: error.details.map((err) => err.message) });
+  }
 
   const isUserExist = await userModel.findOne({
     where: {
@@ -134,6 +162,14 @@ exports.refreshToken = async (request, reply) => {
 exports.forgetPassword = async (request, reply) => {
   const { email } = request.body;
 
+  const { error } = forgetPasswordSchema.validate(request.body, {
+    abortEarly: false,
+  });
+
+  if (error) {
+    return reply.status(400).send({ errors: error.message });
+  }
+
   const isUserExist = await userModel.findOne({ where: { email }, raw: true });
 
   if (!isUserExist) {
@@ -181,6 +217,19 @@ exports.resetPassword = async (request, reply) => {
   const { password } = request.body;
 
   const { token } = request.params;
+
+  const { error } = resetPasswordSchema.validate(
+    { password, token },
+    {
+      abortEarly: false,
+    }
+  );
+
+  if (error) {
+    return reply
+      .status(400)
+      .send({ errors: error.details.map((err) => err.message) });
+  }
 
   const storedToken = await getResetPasswordToken(token);
   if (!storedToken) {
