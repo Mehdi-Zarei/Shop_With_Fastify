@@ -1,6 +1,6 @@
 const userModel = require("../../../models/User");
-
 const { Op } = require("sequelize");
+const uuid = require("uuid").v4;
 
 //* Response Messages
 const {
@@ -20,7 +20,14 @@ const {
 const {
   saveRefreshToken,
   removeRefreshToken,
+  saveResetPasswordToken,
+  getResetPasswordToken,
+  removeResetPasswordToken,
 } = require("../../../utils/redis");
+
+const { sendVerificationEmail } = require("../../../utils/nodemailer");
+
+const emailMessages = require("../../../utils/emailTemplates");
 
 exports.register = async (request, reply) => {
   const { name, phone, email, password } = request.body;
@@ -124,9 +131,77 @@ exports.refreshToken = async (request, reply) => {
   return successResponse(reply, 200, "OK", accessToken);
 };
 
-exports.forgetPassword = async (request, reply) => {};
+exports.forgetPassword = async (request, reply) => {
+  const { email } = request.body;
 
-exports.resetPassword = async (request, reply) => {};
+  const isUserExist = await userModel.findOne({ where: { email }, raw: true });
+
+  if (!isUserExist) {
+    return errorResponse(
+      reply,
+      404,
+      "User Not Found With This Email Address !!"
+    );
+  }
+
+  if (isUserExist.isRestrict) {
+    return errorResponse(reply, 403, "This User Already Banned !!");
+  }
+
+  const resetPasswordToken = uuid();
+
+  const emailData = emailMessages.resetPassword(
+    isUserExist.name,
+    resetPasswordToken
+  );
+
+  const sentEmail = await sendVerificationEmail(
+    isUserExist,
+    emailData.subject,
+    emailData.text
+  );
+
+  if (sentEmail) {
+    await saveResetPasswordToken(resetPasswordToken, email);
+    return successResponse(
+      reply,
+      200,
+      "Reset Password Link has been sent successfully."
+    );
+  } else {
+    return errorResponse(
+      reply,
+      500,
+      "Failed to send Reset Password email. Please try again later."
+    );
+  }
+};
+
+exports.resetPassword = async (request, reply) => {
+  const { password } = request.body;
+
+  const { token } = request.params;
+
+  const storedToken = await getResetPasswordToken(token);
+  if (!storedToken) {
+    return errorResponse(reply, 404, "Invalid or expired reset token.");
+  }
+
+  const encryptPassword = await hashPassword(password, 12);
+
+  const updatedUsers = await userModel.update(
+    { password: encryptPassword },
+    { where: { email: storedToken } }
+  );
+
+  if (updatedUsers === 0) {
+    return errorResponse(reply, 404, "User Not Found !!");
+  }
+
+  await removeResetPasswordToken(token);
+
+  return successResponse(reply, 200, "Your Password Updated Successfully.");
+};
 
 exports.logout = async (request, reply) => {
   const user = request.user;
