@@ -17,4 +17,27 @@ const removeRefreshToken = async (key) => {
   return redis.del(`refreshToken:${key}`);
 };
 
-module.exports = { saveRefreshToken, getRefreshToken, removeRefreshToken };
+const saveResetPasswordToken = async (token, email) => {
+  await redis
+    .multi()
+    .hset(`resetPassword:${token}`, "email", email)
+    .expire(`resetPassword:${token}`, 3600)
+    .exec();
+};
+
+const getResetPasswordToken = async (token) => {
+  return await redis.hget(`resetPassword:${token}`, "email");
+};
+
+const removeResetPasswordToken = async (token) => {
+  return await redis.del(`resetPassword:${token}`);
+};
+
+module.exports = {
+  saveRefreshToken,
+  getRefreshToken,
+  removeRefreshToken,
+  saveResetPasswordToken,
+  getResetPasswordToken,
+  removeResetPasswordToken,
+};
